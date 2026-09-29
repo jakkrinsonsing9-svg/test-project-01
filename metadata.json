@@ -1,0 +1,6 @@
+{
+  "name": "หอคุย (DormTalk)",
+  "description": "ระบบคอมมูนิตี้หอพักนิรนามเพื่อความปลอดภัยและความเป็นส่วนตัวสูงสุด",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

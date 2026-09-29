@@ -1,0 +1,41 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Connectivity test
+    match /test/{docId} {
+      allow read, write: if true;
+    }
+
+    // User profiles
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if isOwner(userId) || !isSignedIn();
+    }
+
+    // Community posts
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if isSignedIn() && (resource.data.authorUid == request.auth.uid);
+
+      // Threaded comments
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if true;
+        allow update: if true;
+        allow delete: if isSignedIn() && (resource.data.authorUid == request.auth.uid);
+      }
+    }
+  }
+}
