@@ -1,4 +1,16 @@
-export type ActiveTab = 'home' | 'categories' | 'verify' | 'login' | 'settings' | 'notifications';
+export type ActiveTab = 'home' | 'categories' | 'verify' | 'login' | 'settings' | 'notifications' | 'admin';
+
+export interface ReportItem {
+  id: string;
+  targetTitle: string;
+  targetPostId?: string;
+  reason: string;
+  reasonLabel: string;
+  details?: string;
+  reporterUid?: string;
+  createdAt: string;
+  status: 'pending' | 'resolved' | 'dismissed';
+}
 
 export interface CommentItem {
   id: string;
@@ -53,6 +65,7 @@ export interface CategoryItem {
 export interface UserProfile {
   uid?: string;
   email?: string;
+  avatarUrl?: string;
   studentIdMasked: string;
   emailMasked: string;
   realBuilding: string;
@@ -61,6 +74,8 @@ export interface UserProfile {
   floor: string;
   isVerified: boolean;
   defaultAnonymous: boolean;
+  role?: 'resident' | 'staff' | 'admin';
+  isAdmin?: boolean;
   darkMode?: boolean;
   notifications: {
     replies: boolean;

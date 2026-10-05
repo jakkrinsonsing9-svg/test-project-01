@@ -155,17 +155,44 @@ export const Header: React.FC<HeaderProps> = ({
             >
               เข้าสู่ระบบ
             </button>
+
+            <button
+              onClick={() => setActiveTab('admin')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 shadow-2xs ${
+                activeTab === 'admin'
+                  ? 'bg-[#111c2d] text-white shadow-sm'
+                  : 'bg-[#ffdad6]/60 text-[#ba1a1a] hover:bg-[#ffdad6]'
+              }`}
+              title="ศูนย์ควบคุมนิติหอพัก (Admin Panel)"
+            >
+              <span className="material-symbols-outlined text-[16px]">admin_panel_settings</span>
+              <span>แอดมิน/นิติ</span>
+            </button>
           </nav>
 
           {/* User Tag & Buttons */}
           <div className="flex items-center gap-2 pl-1">
             <div
               onClick={() => setActiveTab('settings')}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#dee2ef] text-[#424751] text-xs font-medium cursor-pointer hover:bg-[#c2c6d3] transition-colors"
-              title="คลิกเพื่อไปที่การตั้งค่ารหัสนิรนาม"
+              className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
+                user.isAdmin || user.role === 'staff' || user.role === 'admin' || user.email === '69011219002@msu.ac.th'
+                  ? 'bg-[#ffdad6] text-[#ba1a1a] hover:bg-[#ffb4ab]'
+                  : 'bg-[#dee2ef] text-[#424751] hover:bg-[#c2c6d3]'
+              }`}
+              title="คลิกเพื่อไปที่การตั้งค่าและสิทธิ์"
             >
-              <span className="w-2 h-2 rounded-full bg-[#4648d4] animate-pulse"></span>
-              <span>สมาชิกนิรนาม {user.anonymousTag}</span>
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  user.isAdmin || user.role === 'staff' || user.role === 'admin' || user.email === '69011219002@msu.ac.th'
+                    ? 'bg-[#ba1a1a]'
+                    : 'bg-[#4648d4] animate-pulse'
+                }`}
+              ></span>
+              <span>
+                {user.isAdmin || user.role === 'staff' || user.role === 'admin' || user.email === '69011219002@msu.ac.th'
+                  ? 'นิติหอพัก ' + user.anonymousTag
+                  : 'สมาชิกนิรนาม ' + user.anonymousTag}
+              </span>
             </div>
 
             {/* Theme Quick Toggle */}
@@ -210,7 +237,7 @@ export const Header: React.FC<HeaderProps> = ({
               title="โปรไฟล์และการตั้งค่า"
             >
               <img
-                src={AVATAR_URL}
+                src={user.avatarUrl || AVATAR_URL}
                 alt="Profile"
                 className="w-8 h-8 rounded-full object-cover"
                 referrerPolicy="no-referrer"

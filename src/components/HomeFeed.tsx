@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ActiveTab, PostItem, UserProfile } from '../types';
 import { AVATAR_URL, CATEGORIES } from '../data/mockData';
+import { DeleteConfirmModal } from './DeleteConfirmModal';
 
 interface HomeFeedProps {
   posts: PostItem[];
@@ -13,6 +14,7 @@ interface HomeFeedProps {
   onAddComment: (postId: string, commentText: string) => void;
   setActiveTab: (tab: ActiveTab) => void;
   searchQuery: string;
+  onDeletePost?: (postId: string) => void;
 }
 
 export const HomeFeed: React.FC<HomeFeedProps> = ({
@@ -26,6 +28,7 @@ export const HomeFeed: React.FC<HomeFeedProps> = ({
   onAddComment,
   setActiveTab,
   searchQuery,
+  onDeletePost,
 }) => {
   const [showUrgentBanner, setShowUrgentBanner] = useState(true);
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({
@@ -33,6 +36,9 @@ export const HomeFeed: React.FC<HomeFeedProps> = ({
   });
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
   const [feedMode, setFeedMode] = useState<'latest' | 'popular' | 'announcements'>('latest');
+  const [postToDelete, setPostToDelete] = useState<PostItem | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const toggleExpand = (postId: string) => {
     setExpandedComments((prev) => ({ ...prev, [postId]: !prev[postId] }));
@@ -120,7 +126,7 @@ export const HomeFeed: React.FC<HomeFeedProps> = ({
           <div className="rounded-2xl bg-white p-5 border border-[#e7eeff] shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-3">
               <img
-                src={AVATAR_URL}
+                src={user.avatarUrl || AVATAR_URL}
                 alt="Avatar"
                 className="w-12 h-12 rounded-xl object-cover ring-2 ring-[#e1e0ff]"
                 referrerPolicy="no-referrer"
@@ -268,7 +274,7 @@ export const HomeFeed: React.FC<HomeFeedProps> = ({
           <div className="rounded-2xl bg-white p-4 border border-[#e7eeff] shadow-xs flex flex-col gap-3">
             <div className="flex items-center gap-3">
               <img
-                src={AVATAR_URL}
+                src={user.avatarUrl || AVATAR_URL}
                 alt="Me"
                 className="w-10 h-10 rounded-full object-cover ring-2 ring-[#e1e0ff]"
                 referrerPolicy="no-referrer"
@@ -285,8 +291,8 @@ export const HomeFeed: React.FC<HomeFeedProps> = ({
                 onClick={onOpenCreatePost}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-[#f0f3ff] hover:text-[#006b2d] transition-colors"
               >
-                <span className="material-symbols-outlined text-[18px] text-[#006b2d]">image</span>
-                <span>รูปภาพ</span>
+                <span className="material-symbols-outlined text-[18px] text-[#006b2d]">add_a_photo</span>
+                <span>แนบรูปจากเครื่อง</span>
               </button>
               <button
                 onClick={onOpenCreatePost}
@@ -427,14 +433,32 @@ export const HomeFeed: React.FC<HomeFeedProps> = ({
                     </div>
                   </div>
 
-                  {/* Post menu / Report button */}
-                  <button
-                    onClick={() => onOpenReportModal(post.title || post.content.slice(0, 30))}
-                    className="p-1.5 rounded-lg text-[#5a5e69] hover:bg-[#f0f3ff] hover:text-[#ba1a1a] transition-colors"
-                    title="รายงานเนื้อหาที่ไม่เหมาะสม"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">more_vert</span>
-                  </button>
+                  {/* Post Actions: Admin/Author Delete & Report */}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {(user.isAdmin || user.role === 'staff' || user.role === 'admin' || user.email === '69011219002@msu.ac.th' || (post.authorUid && post.authorUid === user.uid)) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPostToDelete(post);
+                          setIsDeleteModalOpen(true);
+                        }}
+                        className="px-2.5 py-1 rounded-lg text-[#ba1a1a] hover:bg-[#ffdad6] text-[11px] font-bold transition-colors flex items-center gap-1 border border-[#ba1a1a]/30 active:scale-95"
+                        title="ลบกระทู้ (สิทธิ์แอดมิน/เจ้าของกระทู้)"
+                      >
+                        <span className="material-symbols-outlined text-[15px]">delete</span>
+                        <span className="hidden sm:inline">ลบโพสต์</span>
+                      </button>
+                    )}
+
+                    {/* Post menu / Report button */}
+                    <button
+                      onClick={() => onOpenReportModal(post.title || post.content.slice(0, 30))}
+                      className="p-1.5 rounded-lg text-[#5a5e69] hover:bg-[#f0f3ff] hover:text-[#ba1a1a] transition-colors"
+                      title="รายงานเนื้อหาที่ไม่เหมาะสม"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">more_vert</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Post Title & Content */}
@@ -772,6 +796,29 @@ export const HomeFeed: React.FC<HomeFeedProps> = ({
       >
         <span className="material-symbols-outlined text-[28px]">edit</span>
       </button>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setPostToDelete(null);
+        }}
+        onConfirm={async () => {
+          if (!postToDelete || !onDeletePost) return;
+          setIsDeleting(true);
+          try {
+            await onDeletePost(postToDelete.id);
+          } finally {
+            setIsDeleting(false);
+            setIsDeleteModalOpen(false);
+            setPostToDelete(null);
+          }
+        }}
+        title="ยืนยันการลบกระทู้"
+        itemName={postToDelete?.title || postToDelete?.content.slice(0, 30) || 'กระทู้นี้'}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 };

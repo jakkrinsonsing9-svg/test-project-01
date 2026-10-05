@@ -430,7 +430,7 @@ export const VerificationView: React.FC<VerificationViewProps> = ({
 
               <div className="flex items-center gap-3">
                 <img
-                  src={AVATAR_URL}
+                  src={user.avatarUrl || AVATAR_URL}
                   alt="Avatar"
                   className="w-10 h-10 rounded-full object-cover ring-2 ring-[#4648d4]"
                   referrerPolicy="no-referrer"

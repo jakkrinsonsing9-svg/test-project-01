@@ -1,6 +1,7 @@
 import { CategoryItem, PostItem, UserProfile } from '../types';
 
 export const INITIAL_USER: UserProfile = {
+  avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
   studentIdMasked: '6501****',
   emailMasked: 'stu****@university.ac.th',
   realBuilding: 'อาคาร 2 (หอพักชาย)',
@@ -248,4 +249,63 @@ export const INITIAL_POSTS: PostItem[] = [
   },
 ];
 
-export const AVATAR_URL = 'https://lh3.googleusercontent.com/aida/AEtjO1WSYhgkMOkgQM11Gdn-6SxQjG0CKVnNnBHAflbfI5xLYy61Mjgx-qF8zY2ErclXbcnQeE8gHwUOxdwPelzsXV6_7xG7_Q-8Ybn_IAV02EpPgmvDisIwE51Ngt7S6ml9MitL3fz5JOzp-hX5gmzj7p3RUWnncqLp9o9pHh6AL9vLcvgFJJ7Ol4_pErtONqoEBbaff218GZOKNU4ZIn8hjy-T6zeLJBXhW9Hm5FJg0wgUGtgtiHN_eRET--Y';
+export const AVATAR_URL = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80';
+
+export interface PresetAvatar {
+  id: string;
+  name: string;
+  url: string;
+  tag: string;
+}
+
+export const PRESET_AVATARS: PresetAvatar[] = [
+  {
+    id: 'avatar-1',
+    name: 'นักศึกษาคูลๆ',
+    tag: 'Student Male',
+    url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
+  },
+  {
+    id: 'avatar-2',
+    name: 'เด็กหอสายชิล',
+    tag: 'Student Female',
+    url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=256&q=80',
+  },
+  {
+    id: 'avatar-3',
+    name: 'แมวส้มประจำหอ',
+    tag: 'Dorm Cat',
+    url: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=256&q=80',
+  },
+  {
+    id: 'avatar-4',
+    name: 'เด็กเนิร์ดเขียนโค้ด',
+    tag: 'Dev Resident',
+    url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=256&q=80',
+  },
+  {
+    id: 'avatar-5',
+    name: 'น้องหมาเฝ้าหอ',
+    tag: 'Friendly Dog',
+    url: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=256&q=80',
+  },
+  {
+    id: 'avatar-6',
+    name: 'สายกาแฟอ่านหนังสือ',
+    tag: 'Study Cafe',
+    url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=256&q=80',
+  },
+  {
+    id: 'avatar-7',
+    name: 'เกมเมอร์รอบดึก',
+    tag: 'Night Owl Gamer',
+    url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80',
+  },
+  {
+    id: 'avatar-8',
+    name: 'กระต่ายน่ารัก',
+    tag: 'Cute Bunny',
+    url: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?auto=format&fit=crop&w=256&q=80',
+  },
+];
+

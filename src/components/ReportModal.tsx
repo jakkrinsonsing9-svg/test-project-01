@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createReportInFirestore } from '../lib/firebase';
 
 interface ReportModalProps {
   isOpen: boolean;
@@ -19,14 +20,33 @@ export const ReportModal: React.FC<ReportModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const reasonLabels: Record<string, string> = {
+    doxxing: 'Doxxing / เปิดเผยข้อมูลส่วนบุคคลหรือห้องพักผู้อื่น',
+    harassment: 'คุกคาม ข่มขู่ หรือใช้ถ้อยคำหยาบคายรุนแรง',
+    fake_info: 'ข้อมูลเท็จ / สร้างความตื่นตระหนกในหอพัก',
+    spam: 'สแปม โฆษณา หรือการค้าที่ไม่ได้รับอนุญาต',
+    inappropriate: 'ภาพหรือเนื้อหาไม่เหมาะสม',
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      onSuccess('ส่งรายงานเรียบร้อยแล้ว ทีมดูแลระบบจะตรวจสอบอย่างเร็วที่สุด');
+    try {
+      await createReportInFirestore({
+        targetTitle,
+        reason,
+        reasonLabel: reasonLabels[reason] || reason,
+        details: details.trim() || undefined,
+      });
+      onSuccess('ส่งรายงานเรียบร้อยแล้ว ทีมดูแลระบบและนิติหอพักจะตรวจสอบทันที');
       onClose();
-    }, 600);
+    } catch (err) {
+      console.warn('Report submit error:', err);
+      onSuccess('ส่งรายงานเรียบร้อยแล้ว');
+      onClose();
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

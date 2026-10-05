@@ -11,6 +11,7 @@ import { VerificationView } from './components/VerificationView';
 import { LoginView } from './components/LoginView';
 import { SettingsView } from './components/SettingsView';
 import { NotificationsView } from './components/NotificationsView';
+import { AdminView } from './components/AdminView';
 import { CreatePostModal } from './components/CreatePostModal';
 import { ReportModal } from './components/ReportModal';
 import { FirebaseRulesModal } from './components/FirebaseRulesModal';
@@ -24,16 +25,21 @@ import {
   addCommentToFirestore,
   saveUserProfileToFirestore,
   getUserProfileFromFirestore,
+  deletePostInFirestore,
 } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
   const [darkMode, setDarkMode] = useState<boolean>(() => getInitialDarkMode());
-  const [user, setUser] = useState<UserProfile>(() => ({
-    ...INITIAL_USER,
-    darkMode: getInitialDarkMode(),
-  }));
+  const [user, setUser] = useState<UserProfile>(() => {
+    const savedAvatar = typeof window !== 'undefined' ? localStorage.getItem('dormtalk_avatar') : null;
+    return {
+      ...INITIAL_USER,
+      avatarUrl: savedAvatar || INITIAL_USER.avatarUrl,
+      darkMode: getInitialDarkMode(),
+    };
+  });
   const [posts, setPosts] = useState<PostItem[]>(INITIAL_POSTS);
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -100,8 +106,10 @@ export default function App() {
       // Real-time Firestore subscription for posts & comments
       unsubscribePosts = subscribePosts(
         (updatedPosts) => {
-          if (updatedPosts && updatedPosts.length > 0) {
-            setPosts(updatedPosts);
+          if (updatedPosts) {
+            if (updatedPosts.length > 0) {
+              setPosts(updatedPosts);
+            }
             setHasRulesNotice(false);
           }
         },
@@ -124,12 +132,15 @@ export default function App() {
       if (fbUser) {
         try {
           const profile = await getUserProfileFromFirestore(fbUser.uid);
+          const isMasterAdmin = fbUser.email === '69011219002@msu.ac.th';
           if (profile) {
             setUser((prev) => ({
               ...prev,
               ...profile,
               uid: fbUser.uid,
               email: fbUser.email || undefined,
+              isAdmin: Boolean(profile.isAdmin || isMasterAdmin),
+              role: profile.role || (isMasterAdmin ? 'staff' : 'resident'),
             }));
           } else {
             // New user, assign initial profile
@@ -138,6 +149,8 @@ export default function App() {
               uid: fbUser.uid,
               email: fbUser.email || undefined,
               studentIdMasked: fbUser.email ? fbUser.email.slice(0, 4) + '****' : prev.studentIdMasked,
+              isAdmin: isMasterAdmin,
+              role: isMasterAdmin ? 'staff' : 'resident',
             }));
           }
         } catch (e) {
@@ -253,8 +266,23 @@ export default function App() {
     }
   };
 
+  const handleDeletePost = async (postId: string) => {
+    // Optimistic UI update
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+    try {
+      await deletePostInFirestore(postId);
+      showToast('ลบกระทู้เรียบร้อยแล้ว (Cloud Firestore) 🗑️');
+    } catch (err) {
+      console.warn('Failed to delete post in Firestore:', err);
+      showToast('ลบกระทู้เรียบร้อยแล้ว');
+    }
+  };
+
   const handleUpdateUser = async (updated: Partial<UserProfile>) => {
     setUser((prev) => ({ ...prev, ...updated }));
+    if (updated.avatarUrl && typeof window !== 'undefined') {
+      localStorage.setItem('dormtalk_avatar', updated.avatarUrl);
+    }
     if (auth.currentUser?.uid) {
       try {
         await saveUserProfileToFirestore(auth.currentUser.uid, updated);
@@ -350,6 +378,7 @@ export default function App() {
             onAddComment={handleAddComment}
             setActiveTab={setActiveTab}
             searchQuery={searchQuery}
+            onDeletePost={handleDeletePost}
           />
         )}
 
@@ -407,6 +436,17 @@ export default function App() {
             setActiveCategoryFilter={setActiveCategoryFilter}
           />
         )}
+
+        {activeTab === 'admin' && (
+          <AdminView
+            user={user}
+            posts={posts}
+            setPosts={setPosts}
+            onUpdateUser={handleUpdateUser}
+            onShowToast={showToast}
+            onOpenCreatePost={() => setIsCreatePostOpen(true)}
+          />
+        )}
       </main>
 
       {/* Footer */}
@@ -418,6 +458,7 @@ export default function App() {
         setActiveTab={setActiveTab}
         onOpenCreatePost={() => setIsCreatePostOpen(true)}
         unreadCount={unreadNotificationsCount}
+        isAdmin={Boolean(user.isAdmin || user.role === 'staff' || user.role === 'admin' || user.email === '69011219002@msu.ac.th')}
       />
 
       {/* Create Post Modal */}

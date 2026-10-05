@@ -31,7 +31,7 @@ import {
   Timestamp,
   writeBatch,
 } from 'firebase/firestore';
-import { PostItem, CommentItem, UserProfile } from '../types';
+import { PostItem, CommentItem, UserProfile, ReportItem } from '../types';
 import { INITIAL_POSTS } from '../data/mockData';
 import firebaseConfigData from '../../firebase-applet-config.json';
 
@@ -388,5 +388,88 @@ export async function getUserProfileFromFirestore(
     return null;
   } catch (error) {
     handleFirestoreError(error, OperationType.GET, path);
+  }
+}
+
+// Delete a post from Cloud Firestore (Admin or Owner)
+export async function deletePostInFirestore(postId: string): Promise<void> {
+  const path = `posts/${postId}`;
+  try {
+    await deleteDoc(doc(db, 'posts', postId));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+}
+
+// Toggle post urgent/announcement status in Firestore
+export async function toggleUrgentPostInFirestore(
+  postId: string,
+  isUrgent: boolean
+): Promise<void> {
+  const path = `posts/${postId}`;
+  try {
+    await updateDoc(doc(db, 'posts', postId), {
+      isUrgent,
+      statusUpdate: isUrgent ? 'ประกาศด่วนจากนิติหอพัก' : null,
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
+  }
+}
+
+// Create a safety report in Cloud Firestore
+export async function createReportInFirestore(reportData: {
+  targetTitle: string;
+  targetPostId?: string;
+  reason: string;
+  reasonLabel: string;
+  details?: string;
+}): Promise<string> {
+  const path = 'reports';
+  try {
+    const docRef = await addDoc(collection(db, path), {
+      ...reportData,
+      reporterUid: auth.currentUser?.uid || 'anonymous',
+      status: 'pending',
+      createdAt: serverTimestamp(),
+    });
+    return docRef.id;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, path);
+  }
+}
+
+// Fetch all safety reports (for Admin Dashboard)
+export async function fetchReportsFromFirestore(): Promise<ReportItem[]> {
+  const path = 'reports';
+  try {
+    const snapshot = await getDocs(query(collection(db, path), orderBy('createdAt', 'desc')));
+    return snapshot.docs.map((docSnap) => {
+      const data = docSnap.data();
+      return {
+        id: docSnap.id,
+        targetTitle: data.targetTitle || 'โพสต์ในระบบ',
+        targetPostId: data.targetPostId || undefined,
+        reason: data.reason || 'other',
+        reasonLabel: data.reasonLabel || data.reason || 'เนื้อหาไม่เหมาะสม',
+        details: data.details || undefined,
+        reporterUid: data.reporterUid,
+        createdAt: formatTimeAgo(data.createdAt),
+        status: data.status || 'pending',
+      };
+    });
+  } catch (error) {
+    console.warn('Could not fetch reports:', error);
+    return [];
+  }
+}
+
+// Delete or dismiss report in Firestore
+export async function deleteReportInFirestore(reportId: string): Promise<void> {
+  const path = `reports/${reportId}`;
+  try {
+    await deleteDoc(doc(db, 'reports', reportId));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
   }
 }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ActiveTab, UserProfile } from '../types';
 import { AVATAR_URL } from '../data/mockData';
 import { firebaseConfig } from '../lib/firebase';
+import { AvatarPickerModal } from './AvatarPickerModal';
 
 interface SettingsViewProps {
   user: UserProfile;
@@ -29,6 +30,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     isDark ? 'dark' : 'light'
   );
   const [showCssVars, setShowCssVars] = useState(false);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
 
   const handleToggleTheme = (enableDark: boolean) => {
     setThemeMode(enableDark ? 'dark' : 'light');
@@ -112,12 +114,24 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#f0f3ff] border border-[#dee8ff]">
               <div className="flex items-center gap-3">
-                <img
-                  src={AVATAR_URL}
-                  alt="Avatar"
-                  className="w-12 h-12 rounded-xl object-cover ring-2 ring-[#4648d4]"
-                  referrerPolicy="no-referrer"
-                />
+                <div
+                  onClick={() => setIsAvatarModalOpen(true)}
+                  className="relative group cursor-pointer shrink-0"
+                  title="คลิกเพื่อเปลี่ยนรูปโปรไฟล์"
+                >
+                  <img
+                    src={user.avatarUrl || AVATAR_URL}
+                    alt="Avatar"
+                    className="w-14 h-14 rounded-2xl object-cover ring-2 ring-[#4648d4] group-hover:opacity-85 transition-all shadow-sm"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
+                    <span className="material-symbols-outlined text-[20px]">photo_camera</span>
+                  </div>
+                  <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#4648d4] text-white flex items-center justify-center shadow-xs">
+                    <span className="material-symbols-outlined text-[13px]">edit</span>
+                  </span>
+                </div>
                 <div className="flex flex-col">
                   <span className="text-xs text-[#5a5e69]">รหัสนิรนามปัจจุบัน</span>
                   <span className="text-base font-extrabold text-[#111c2d]">
@@ -129,15 +143,25 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 </div>
               </div>
 
-              {/* Reset Anonymous Tag Button */}
-              <button
-                type="button"
-                onClick={handleResetTag}
-                className="px-4 py-2.5 rounded-xl bg-[#4648d4] text-white hover:bg-[#6063ee] text-xs font-semibold shadow-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 whitespace-nowrap"
-              >
-                <span className="material-symbols-outlined text-[16px]">refresh</span>
-                <span>สุ่มรหัส Tag ใหม่</span>
-              </button>
+              {/* Action Buttons: Change Avatar & Reset Tag */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAvatarModalOpen(true)}
+                  className="px-3.5 py-2.5 rounded-xl bg-white border border-[#dee8ff] text-[#4648d4] hover:bg-[#e1e0ff]/40 text-xs font-semibold shadow-2xs transition-all flex items-center justify-center gap-1.5 active:scale-95 whitespace-nowrap"
+                >
+                  <span className="material-symbols-outlined text-[16px]">add_a_photo</span>
+                  <span>เปลี่ยนรูปโปรไฟล์</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetTag}
+                  className="px-3.5 py-2.5 rounded-xl bg-[#4648d4] text-white hover:bg-[#6063ee] text-xs font-semibold shadow-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 whitespace-nowrap"
+                >
+                  <span className="material-symbols-outlined text-[16px]">refresh</span>
+                  <span>สุ่มรหัส Tag</span>
+                </button>
+              </div>
             </div>
 
             <p className="text-xs text-[#5a5e69] leading-relaxed">
@@ -509,6 +533,66 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </div>
           </div>
 
+          {/* Admin & Staff Role Management */}
+          <div className="rounded-2xl bg-white p-6 border border-[#e7eeff] shadow-xs flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#ba1a1a] uppercase tracking-wider flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                สิทธิ์แอดมิน / นิติหอพัก
+              </span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  user.isAdmin || user.role === 'staff' || user.role === 'admin' || user.email === '69011219002@msu.ac.th'
+                    ? 'bg-[#ffdad6] text-[#ba1a1a] border border-[#ffb4ab]'
+                    : 'bg-[#f0f3ff] text-[#5a5e69]'
+                }`}
+              >
+                {user.isAdmin || user.role === 'staff' || user.role === 'admin' || user.email === '69011219002@msu.ac.th'
+                  ? 'แอดมินเปิดใช้งาน'
+                  : 'ผู้พักอาศัยทั่วไป'}
+              </span>
+            </div>
+            <p className="text-xs text-[#5a5e69] leading-relaxed">
+              สิทธิ์แอดมินช่วยให้คุณสามารถจัดการลบโพสต์ ปักหมุดประกาศด่วน ออกประกาศทางการ และตรวจสอบรายงานความปลอดภัย
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const currentIsAdmin = Boolean(
+                    user.isAdmin || user.role === 'staff' || user.role === 'admin' || user.email === '69011219002@msu.ac.th'
+                  );
+                  const nextVal = !currentIsAdmin;
+                  onUpdateUser({
+                    isAdmin: nextVal,
+                    role: nextVal ? 'staff' : 'resident',
+                  });
+                  onShowToast(
+                    nextVal
+                      ? 'เปิดใช้งานสิทธิ์แอดมิน/นิติหอพัก สำเร็จ 🛡️'
+                      : 'สลับกลับเป็นสิทธิ์ผู้พักอาศัยทั่วไป'
+                  );
+                }}
+                className="flex-1 py-2.5 rounded-xl border border-[#dee8ff] text-xs font-semibold text-[#111c2d] hover:bg-[#f0f3ff] transition-colors flex items-center justify-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[16px]">swap_horiz</span>
+                <span>
+                  {user.isAdmin || user.role === 'staff' || user.role === 'admin' || user.email === '69011219002@msu.ac.th'
+                    ? 'สลับเป็นผู้พักอาศัย'
+                    : 'เปิดสิทธิ์แอดมิน'}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('admin')}
+                className="flex-1 py-2.5 rounded-xl bg-[#ba1a1a] hover:bg-[#93000a] text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[16px]">dashboard</span>
+                <span>เปิดแผงควบคุมแอดมิน</span>
+              </button>
+            </div>
+          </div>
+
           {/* Community Safety & Report Test */}
           <div className="rounded-2xl bg-white p-6 border border-[#e7eeff] shadow-xs flex flex-col gap-3">
             <span className="text-xs font-bold text-[#5a5e69] uppercase tracking-wider">
@@ -565,6 +649,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Avatar Picker Modal */}
+      <AvatarPickerModal
+        isOpen={isAvatarModalOpen}
+        onClose={() => setIsAvatarModalOpen(false)}
+        currentAvatarUrl={user.avatarUrl || AVATAR_URL}
+        onSelectAvatar={(newUrl) => onUpdateUser({ avatarUrl: newUrl })}
+        onShowToast={onShowToast}
+      />
     </div>
   );
 };
