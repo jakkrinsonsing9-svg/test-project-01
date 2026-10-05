@@ -1,8 +1,12 @@
 {
-  "apiKey": "AIzaSyC7qJAAXUCLJYiebN6XDRZC4iZjcYlzZWA",
-  "authDomain": "dormtalk-131e0.firebaseapp.com",
-  "projectId": "dormtalk-131e0",
-  "storageBucket": "dormtalk-131e0.firebasestorage.app",
-  "messagingSenderId": "945261602978",
-  "appId": "1:945261602978:web:b4fd5900e78a680e210ffb"
+  "projectId": "gen-lang-client-0588112775",
+  "appId": "1:559418706508:web:9dc6d0280ec3b158e802e9",
+  "apiKey": "AIzaSyBY3vee3J-dEj6lseCkIdOwQRmGKmKhetE",
+  "authDomain": "gen-lang-client-0588112775.firebaseapp.com",
+  "firestoreDatabaseId": "ai-studio-testproject01-4abf9cf1-23fd-47df-82df-e16438bcef7b",
+  "storageBucket": "gen-lang-client-0588112775.firebasestorage.app",
+  "messagingSenderId": "559418706508",
+  "measurementId": "",
+  "oAuthClientId": "559418706508-opgds2n83inkt5hq8hsl3u2cihv9ekqp.apps.googleusercontent.com",
+  "recaptchaSiteKey": ""
 }

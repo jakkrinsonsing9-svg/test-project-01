@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ActiveTab, UserProfile } from '../types';
 import {
   auth,
+  firebaseConfig,
   googleProvider,
   saveUserProfileToFirestore,
   getUserProfileFromFirestore,
@@ -103,6 +104,8 @@ export const LoginView: React.FC<LoginViewProps> = ({
         msg = 'รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร';
       } else if (err.code === 'auth/user-not-found') {
         msg = 'ไม่พบบัญชีผู้ใช้นี้ กรุณาเลือก "ลงทะเบียนใหม่"';
+      } else if (err.code === 'auth/operation-not-allowed') {
+        msg = 'ระบบอีเมล/รหัสผ่านยังไม่ได้เปิดใช้งาน กรุณาใช้ปุ่ม "เข้าสู่ระบบด้วย Google (SSO)" ด้านล่างได้ทันที';
       } else if (err.message) {
         msg = err.message;
       }
@@ -147,6 +150,12 @@ export const LoginView: React.FC<LoginViewProps> = ({
       console.error('Google Sign-In Error:', err);
       if (err.code === 'auth/popup-closed-by-user') {
         setErrorMessage('หน้าต่างล็อกอิน Google ถูกปิดก่อนทำรายการเสร็จสิ้น');
+      } else if (err.code === 'auth/popup-blocked') {
+        setErrorMessage('เบราว์เซอร์บล็อกหน้าต่างป๊อปอัป กรุณากดอนุญาตป๊อปอัป (Popups) ในแถบที่อยู่เว็บ แล้วลองใหม่อีกครั้ง');
+      } else if (err.code === 'auth/unauthorized-domain') {
+        setErrorMessage('โดเมนของเว็บไซต์นี้ยังไม่ได้เพิ่มใน Firebase Authorized Domains (สามารถเข้าใช้งานด้วยอีเมล/รหัสนักศึกษา หรือโหมดผู้เยี่ยมชมได้ทันที)');
+      } else if (err.code === 'auth/operation-not-allowed') {
+        setErrorMessage('ยังไม่ได้เปิดใช้งาน Google Provider ใน Firebase Console > Authentication > Sign-in method');
       } else {
         setErrorMessage(err.message || 'ไม่สามารถเข้าสู่ระบบด้วย Google ได้');
       }
@@ -222,7 +231,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
             ยินดีต้อนรับสู่ หอคุย (DormTalk)
           </h1>
           <p className="text-sm text-white/90 leading-relaxed">
-            เชื่อมต่อกับฐานข้อมูล Cloud Firestore จริง (Project: <span className="font-mono bg-white/20 px-1.5 py-0.5 rounded text-xs">dormtalk-131e0</span>)
+            เชื่อมต่อกับฐานข้อมูล Cloud Firestore จริง (Project: <span className="font-mono bg-white/20 px-1.5 py-0.5 rounded text-xs">{firebaseConfig.projectId}</span>)
             บันทึกและซิงค์กระทู้ ความคิดเห็น และผู้ใช้งานแบบเรียลไทม์
           </p>
 
@@ -249,7 +258,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-center text-[11px]">
               <span className="text-white/80">Project ID:</span>
-              <span className="font-mono font-semibold">dormtalk-131e0</span>
+              <span className="font-mono font-semibold">{firebaseConfig.projectId}</span>
             </div>
             <div className="flex justify-between items-center text-[11px]">
               <span className="text-white/80">Database:</span>

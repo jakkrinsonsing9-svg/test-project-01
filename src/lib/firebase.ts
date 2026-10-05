@@ -33,19 +33,13 @@ import {
 } from 'firebase/firestore';
 import { PostItem, CommentItem, UserProfile } from '../types';
 import { INITIAL_POSTS } from '../data/mockData';
+import firebaseConfigData from '../../firebase-applet-config.json';
 
-export const firebaseConfig = {
-  apiKey: "AIzaSyC7qJAAXUCLJYiebN6XDRZC4iZjcYlzZWA",
-  authDomain: "dormtalk-131e0.firebaseapp.com",
-  projectId: "dormtalk-131e0",
-  storageBucket: "dormtalk-131e0.firebasestorage.app",
-  messagingSenderId: "945261602978",
-  appId: "1:945261602978:web:b4fd5900e78a680e210ffb"
-};
+export const firebaseConfig = firebaseConfigData;
 
 // Initialize Firebase App
 export const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 

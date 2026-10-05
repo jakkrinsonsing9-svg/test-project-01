@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ActiveTab, UserProfile } from '../types';
 import { AVATAR_URL } from '../data/mockData';
+import { firebaseConfig } from '../lib/firebase';
 
 interface SettingsViewProps {
   user: UserProfile;
@@ -533,7 +534,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 การเชื่อมต่อ Firebase
               </span>
               <span className="px-2 py-0.5 rounded-full bg-[#e1e0ff] text-[#4648d4] text-[10px] font-bold">
-                dormtalk-131e0
+                {firebaseConfig.projectId}
               </span>
             </div>
             <p className="text-xs text-[#5a5e69] leading-relaxed">

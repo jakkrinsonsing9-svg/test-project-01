@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { firebaseConfig } from '../lib/firebase';
 
 interface FirebaseRulesModalProps {
   isOpen: boolean;
@@ -74,7 +75,7 @@ export const FirebaseRulesModal: React.FC<FirebaseRulesModalProps> = ({
                 Cloud Firestore Security Rules
               </h3>
               <p className="text-xs text-[#5a5e69]">
-                สำหรับโปรเจกต์ Firebase: <span className="font-mono font-semibold text-[#4648d4]">dormtalk-131e0</span>
+                สำหรับโปรเจกต์ Firebase: <span className="font-mono font-semibold text-[#4648d4]">{firebaseConfig.projectId}</span>
               </p>
             </div>
           </div>
@@ -95,7 +96,7 @@ export const FirebaseRulesModal: React.FC<FirebaseRulesModalProps> = ({
             <li>
               เปิดหน้า{' '}
               <a
-                href="https://console.firebase.google.com/project/dormtalk-131e0/firestore/rules"
+                href={`https://console.firebase.google.com/project/${firebaseConfig.projectId}/firestore/rules`}
                 target="_blank"
                 rel="noreferrer"
                 className="text-[#4648d4] font-semibold underline hover:text-[#3234a9]"
